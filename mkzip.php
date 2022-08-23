@@ -13,7 +13,7 @@ function add2zip($zip, $dir, $cwd)
 				case '..':
 				case '.git':
 				case '.idea':
-				case '_extras':
+				case '_':
 					continue 2;
 			}
 

@@ -3,7 +3,7 @@ Script to create a Joomla! extension installation zip file from a PhpStorm proje
 The following project folders are not included the zip file ...
 * .git
 * .idea
-* _extras
+* _
 
 The following project files are not included in the zip file ...
 * .doc
