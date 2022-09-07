@@ -61,7 +61,7 @@ if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
 
 if (file_exists($zipfile))
 {
-	echo "\nCreated : " . $zipfile . "\n";
+	echo "\nCreated : ${zipfile}\n";
 	echo "\nFile size : " . filesize($zipfile) . "\n";
 }
 else
