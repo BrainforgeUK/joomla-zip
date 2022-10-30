@@ -15,6 +15,12 @@ function add2zip($zip, $dir, $cwd)
 				case '.idea':
 				case '_':
 					continue 2;
+				default:
+					if ($entry[0] == '_')
+					{
+						continue 2;
+					}
+					break;
 			}
 
 			switch(pathinfo($entry, PATHINFO_EXTENSION))
