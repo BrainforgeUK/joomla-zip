@@ -16,10 +16,6 @@ function add2zip($zip, $dir, $cwd)
 				case '_':
 					continue 2;
 				default:
-					if ($entry[0] == '_')
-					{
-						continue 2;
-					}
 					break;
 			}
 
@@ -57,12 +53,26 @@ if (strpos($cwd, 'htdocs') !== false) die('Not a Joomla extension project.');
 $zipfile = dirname($cwd) . '/' . basename($cwd) . '.zip';
 if (is_file($zipfile)) unlink($zipfile);
 
-$zip = new ZipArchive();
-if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
-{
-	add2zip($zip, $cwd, $cwd);
+$parts = explode('_', basename($cwd, 2));
+if ($parts < 2) die('Invalid extension folder');
 
-	$zip->close();
+switch($parts[0])
+{
+	case 'com':
+	case 'lib':
+	case 'mod':
+	case 'pkg':
+	case 'tpl':
+		$zip = new ZipArchive();
+		if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
+		{
+			add2zip($zip, $cwd, $cwd);
+
+			$zip->close();
+		}
+		break;
+	default:
+		die($parts[0] . ' : This extension type is not supported');
 }
 
 if (file_exists($zipfile))
