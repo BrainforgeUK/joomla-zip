@@ -62,6 +62,7 @@ switch($parts[0])
 	case 'lib':
 	case 'mod':
 	case 'pkg':
+	case 'plg':
 	case 'tpl':
 		$zip = new ZipArchive();
 		if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
