@@ -22,7 +22,9 @@ function add2zip($zip, $dir, $cwd)
 			switch(pathinfo($entry, PATHINFO_EXTENSION))
 			{
 				case 'doc':
+				case 'docx':
 				case 'md':
+				case 'odt':
 					continue 2;
 			}
 
