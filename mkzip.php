@@ -1,5 +1,5 @@
 <?php
-function add2zip($zip, $dir, $cwd)
+function add2zip($zip, $dir, $cwd, $type, $level)
 {
 	$basedir = trim(substr($dir, strlen($cwd)), '/');
 
@@ -28,6 +28,17 @@ function add2zip($zip, $dir, $cwd)
 					continue 2;
 			}
 
+			switch($type . '.' . $level)
+			{
+				case 'pkg.0':
+					if ($entry[0] === '_')
+					{
+						// Ignore top-level files / folders with _ prefix
+						continue 2;
+					}
+					break;
+			}
+
 			if (empty($dir))
 			{
 				$fullpath = $entry;
@@ -39,7 +50,7 @@ function add2zip($zip, $dir, $cwd)
 
 			if (is_dir($fullpath))
 			{
-				add2zip($zip, $fullpath, $cwd);
+				add2zip($zip, $fullpath, $cwd, $type, $level+1);
 				continue;
 			}
 
@@ -47,6 +58,11 @@ function add2zip($zip, $dir, $cwd)
 		}
 		closedir($handle);
 	}
+}
+
+if (count($argv) > 1)
+{
+	chdir($argv[1]);
 }
 
 $cwd = getcwd();
@@ -69,7 +85,7 @@ switch($parts[0])
 		$zip = new ZipArchive();
 		if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
 		{
-			add2zip($zip, $cwd, $cwd);
+			add2zip($zip, $cwd, $cwd, $parts[0], 0);
 
 			$zip->close();
 		}
