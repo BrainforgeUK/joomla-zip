@@ -26,6 +26,10 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				case 'md':
 				case 'odt':
 					continue 2;
+				case 'zip':
+					if ($level) break;
+					if ($type != 'pkg') break;
+					continue 2;
 			}
 
 			switch($type . '.' . $level)
@@ -60,6 +64,46 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 	}
 }
 
+function process($type, $zipLevel=1)
+{
+	$cwd = getcwd();
+
+	$zipfile = dirname($cwd, $zipLevel) . '/' . basename($cwd) . '.zip';
+	if (is_file($zipfile)) unlink($zipfile);
+
+	switch($type)
+	{
+		case 'com':
+		case 'lib':
+		case 'mod':
+		case 'pkg':
+		case 'plg':
+		case 'tpl':
+			$zip = new ZipArchive();
+			if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
+			{
+				add2zip($zip, $cwd, $cwd, $type, 0);
+
+				$zip->close();
+			}
+			break;
+		default:
+			die($type . ' : This extension type is not supported');
+	}
+
+	if (file_exists($zipfile))
+	{
+		echo "\nCreated : ${zipfile}\n";
+		echo "\nFile size : " . filesize($zipfile) . "\n";
+		return true;
+	}
+	else
+	{
+		echo "\nFailed : " . $zipfile . "\n";
+		return false;
+	}
+}
+
 if (count($argv) > 1)
 {
 	chdir($argv[1]);
@@ -68,39 +112,34 @@ if (count($argv) > 1)
 $cwd = getcwd();
 if (strpos($cwd, 'htdocs') !== false) die('Not a Joomla extension project.');
 
-$zipfile = dirname($cwd) . '/' . basename($cwd) . '.zip';
-if (is_file($zipfile)) unlink($zipfile);
-
 $parts = explode('_', basename($cwd, 2));
 if ($parts < 2) die('Invalid extension folder');
+$type = $parts[0];
 
-switch($parts[0])
+if (!process($type))
 {
-	case 'com':
-	case 'lib':
-	case 'mod':
-	case 'pkg':
-	case 'plg':
-	case 'tpl':
-		$zip = new ZipArchive();
-		if ($zip->open($zipfile, ZipArchive::CREATE) !== false)
+	exit(1);
+}
+
+if ($type == 'pkg' &&
+	is_dir('extensions'))
+{
+	chdir('extensions');
+
+	if ($handle = opendir('.'))
+	{
+		while (false !== ($entry = readdir($handle)))
 		{
-			add2zip($zip, $cwd, $cwd, $parts[0], 0);
+			if (!is_dir($entry)) continue;
 
-			$zip->close();
+			$parts = explode('_', $entry);
+			if (count($parts) < 2) continue;
+			if (empty($parts[0])) continue;
+
+			chdir($entry);
+			process($parts[0], 2);
+			chdir('..');
 		}
-		break;
-	default:
-		die($parts[0] . ' : This extension type is not supported');
-}
-
-if (file_exists($zipfile))
-{
-	echo "\nCreated : ${zipfile}\n";
-	echo "\nFile size : " . filesize($zipfile) . "\n";
-}
-else
-{
-	echo "\nFailed : " . $zipfile . "\n";
+	}
 }
 
