@@ -19,6 +19,9 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 					break;
 			}
 
+			// In case .doc is open for editting
+			if (str_starts_with($entry, '.~lock')) continue;
+
 			switch(pathinfo($entry, PATHINFO_EXTENSION))
 			{
 				case 'doc':
