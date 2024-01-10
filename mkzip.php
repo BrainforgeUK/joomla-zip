@@ -1,7 +1,16 @@
 <?php
 function add2zip($zip, $dir, $cwd, $type, $level)
 {
-	$basedir = trim(substr($dir, strlen($cwd)), '/');
+	$basedir = [];
+	$nodes = explode('/', trim(str_replace('\\', '/', $dir), '/'));
+	krsort($nodes);
+	foreach($nodes as $node)
+	{
+		if(count($basedir) >= $level) break;
+		$basedir[] = $node;
+	}
+	krsort($basedir);
+	$basedir = implode('/', $basedir);
 
 	if ($handle = opendir($dir))
 	{
@@ -14,6 +23,31 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				case '.git':
 				case '.idea':
 				case '_':
+					continue 2;
+				case 'extensions.txt';
+					if ($level) break;
+					if ($type != 'pkg') break;
+
+					$extensions = file_get_contents($entry);
+					if (empty($extensions)) continue 2;
+
+					foreach(explode("\n", $extensions) as $extension)
+					{
+						$extension = trim($extension);
+						if (empty($extension)) continue;
+						if ($extension[0] == '#') continue;
+
+						$srcdir = dirname($cwd, 2) . '/' . dirname($extension, 2);
+						chdir($srcdir);
+
+						add2zip($zip,
+							dirname($dir, 2) . '/' . $extension,
+							$basedir . '/extensions/' . basename($extension),
+							$type, 2);
+					}
+
+					chdir($cwd);
+
 					continue 2;
 				default:
 					break;
@@ -61,6 +95,7 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				continue;
 			}
 
+			$x = getcwd();
 			$zip->addFile(trim($basedir . '/' . $entry, '/'));
 		}
 		closedir($handle);
