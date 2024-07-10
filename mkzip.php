@@ -112,6 +112,7 @@ function process($type, $zipLevel=1)
 	switch($type)
 	{
 		case 'com':
+		case 'file':
 		case 'lib':
 		case 'mod':
 		case 'pkg':
