@@ -95,7 +95,6 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				continue;
 			}
 
-			$x = getcwd();
 			$zip->addFile(trim($basedir . '/' . $entry, '/'));
 		}
 		closedir($handle);
