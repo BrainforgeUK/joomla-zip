@@ -148,6 +148,49 @@ function process($type, $zipLevel=1)
 	}
 }
 
+function processPkgExtensions($dirname)
+{
+	chdir($dirname);
+
+	if ($handle = opendir('.'))
+	{
+		while (false !== ($entry = readdir($handle)))
+		{
+			if (!is_dir($entry)) continue;
+
+			$parts = explode('_', $entry);
+			switch($parts[0])
+			{
+				case '.':
+				case '..':
+					continue 2;
+				case 'com':
+				case 'file':
+				case 'lib':
+				case 'mod':
+				case 'pkg':
+				case 'plg':
+				case 'tpl':
+					if (count($parts) >= 2)
+					{
+						chdir($entry);
+						process($parts[0], 2);
+						chdir('..');
+						continue 2;
+					}
+					break;
+				default:
+					break;
+
+			}
+
+			chdir($entry);
+			processPkgExtensions($entry);
+			chdir('..');
+		}
+	}
+}
+
 if (count($argv) > 1)
 {
 	chdir($argv[1]);
@@ -160,30 +203,14 @@ $parts = explode('_', basename($cwd, 2));
 if ($parts < 2) die('Invalid extension folder');
 $type = $parts[0];
 
-if (!process($type))
-{
-	exit(1);
-}
+if (!process($type)) exit(1);
 
-if ($type == 'pkg' &&
-	is_dir('extensions'))
+switch($type)
 {
-	chdir('extensions');
-
-	if ($handle = opendir('.'))
-	{
-		while (false !== ($entry = readdir($handle)))
+	case 'pkg':
+		if (is_dir('extensions'))
 		{
-			if (!is_dir($entry)) continue;
-
-			$parts = explode('_', $entry);
-			if (count($parts) < 2) continue;
-			if (empty($parts[0])) continue;
-
-			chdir($entry);
-			process($parts[0], 2);
-			chdir('..');
+			processPkgExtensions('extensions');
 		}
-	}
+		break;
 }
-
