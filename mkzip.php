@@ -184,6 +184,8 @@ function processPkgExtensions($dirname)
 
 			}
 
+			// TODO plugin extensions are organised according to plugin folders
+			// process() needs to be changed to handle this.
 			chdir($entry);
 			processPkgExtensions($entry);
 			chdir('..');
