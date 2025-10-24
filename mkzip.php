@@ -10,6 +10,9 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 		$basedir[] = $node;
 	}
 	krsort($basedir);
+
+	$basedir = array_values($basedir);
+
 	$basedir = implode('/', $basedir);
 
 	if ($handle = opendir($dir))
@@ -101,7 +104,26 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				continue;
 			}
 
-			$zip->addFile(trim($basedir . '/' . $entry, '/'));
+			$entryname = explode('/', $basedir);
+
+			switch($entryname[0])
+			{
+				case 'Components':
+				case 'Files':
+				case 'Libraries':
+				case 'Modules':
+				case 'Packages':
+				case 'Plugins':
+				case 'Templates':
+					$entryname[0] = 'extensions';
+					$entryname = implode('/', $entryname) . '/' . $entry;
+					break;
+				default:
+					$entryname = '';
+					break;
+			}
+
+			$zip->addFile(trim($basedir . '/' . $entry, '/'), $entryname);
 		}
 		closedir($handle);
 	}
