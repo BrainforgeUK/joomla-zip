@@ -43,10 +43,12 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 						$srcdir = dirname($cwd, 2) . '/' . dirname($extension, 2);
 						chdir($srcdir);
 
+						$extensionType = explode('_', basename($extension))[0];
+
 						add2zip($zip,
 							dirname($dir, 2) . '/' . $extension,
 							$basedir . '/extensions/' . basename($extension),
-							$type, 2);
+							$extensionType, 2);
 					}
 
 					chdir($cwd);
@@ -87,6 +89,18 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 						continue 2;
 					}
 					break;
+				default:
+					break;
+			}
+
+			$entryname = explode('/', $basedir);
+
+			switch($type)
+			{
+				case 'plg':
+					// Ensure this is set correctly when linked through package extensions.txt file
+					$entryname[0] = 'Plugins';
+					break;
 			}
 
 			if (empty($dir))
@@ -103,8 +117,6 @@ function add2zip($zip, $dir, $cwd, $type, $level)
 				add2zip($zip, $fullpath, $cwd, $type, $level+1);
 				continue;
 			}
-
-			$entryname = explode('/', $basedir);
 
 			switch($entryname[0])
 			{
