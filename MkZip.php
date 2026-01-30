@@ -3,11 +3,11 @@ class MkZip
 {
 	protected $baseType;
 
-	function __construct($baseType)
+	function __construct($baseType, $zipLevel=1)
 	{
 		$this->baseType = $baseType;
 
-		$this->process($this->baseType);
+		$this->process($this->baseType, $zipLevel);
 	}
 
 	/*
@@ -174,7 +174,14 @@ class MkZip
 		$cwd = getcwd();
 
 		$zipfile = dirname($cwd, $zipLevel) . '/' . basename($cwd) . '.zip';
-		if (is_file($zipfile)) unlink($zipfile);
+		if (is_file($zipfile))
+		{
+			if (!unlink($zipfile))
+			{
+				echo 'Cannot delete zip file: ' . $zipfile;
+				exit(1);
+			}
+		}
 
 		switch($type)
 		{
@@ -277,7 +284,44 @@ switch($type)
 	case 'pkg':
 		if (is_dir('extensions'))
 		{
-			$mkZip->processPkgExtensions('extensions');
+			if ($handle = opendir('extensions'))
+			{
+				while (false !== ($entry = readdir($handle)))
+				{
+					$parts = explode('_', $entry);
+
+					switch ($parts[0])
+					{
+						case 'com':
+						case 'file':
+						case 'lib':
+						case 'mod':
+						case 'pkg':
+						case 'plg':
+						case 'tpl':
+							if (count($parts) >= 2)
+							{
+								$entry = 'extensions/' . $entry;
+								if (!chdir($entry))
+								{
+									echo 'Cannot access: ' .  $cwd . '/' . $entry;
+									exit(1);
+								}
+								$mkZip = new MkZip($parts[0], 2);
+								if (!chdir($cwd))
+								{
+									echo 'Cannot access: ' .  $cwd;
+									exit(1);
+								}
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
 		}
 		break;
 }
+
+exit(0);
